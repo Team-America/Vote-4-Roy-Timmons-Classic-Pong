@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Patriotic Pong - Vote for Roy Timmons</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(to bottom, #0a0a3a, #1a1a5a);
+            font-family: 'Arial', sans-serif;
+            color: #fff;
+            overflow: auto;
+            padding: 20px;
+        }
+        
+        .game-container {
+            text-align: center;
+            position: relative;
+            width: 100%;
+            max-width: 900px;
+        }
+        
+        .banner {
+            background: linear-gradient(to right, #b22234, #ffffff, #3c3b6e);
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+        }
+        
+        .banner h1 {
+            font-size: clamp(1.5rem, 4vw, 2.2rem);
+            color: #1a1a5a;
+            text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.7);
+            letter-spacing: 1px;
+            line-height: 1.2;
+        }
+        
+        .subtitle {
+            font-size: clamp(1rem, 3vw, 1.5rem);
+            margin-bottom: 15px;
+            color: #ffffff;
+            text-shadow: 0 0 8px #3c3b6e;
+        }
+        
+        .game-board {
+            position: relative;
+            margin: 0 auto;
+            border: 4px solid #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.7);
+            background-color: #0a0a3a;
+            overflow: hidden;
+            width: 100%;
+            max-width: 800px;
+            height: 60vh;
+            max-height: 450px;
+        }
+        
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 15px;
+            padding: 0 10px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .player-controls {
+            background: linear-gradient(to bottom, #b22234, #8b0000);
+            padding: 8px 15px;
+            border-radius: 6px;
+            border: 2px solid #ffffff;
+            box-shadow: 0 0 8px rgba(255, 255, 255, 0.5);
+            flex: 1;
+            min-width: 150px;
+        }
+        
+        .player-controls h3 {
+            margin-bottom: 5px;
+            color: #ffffff;
+            font-size: clamp(1rem, 3vw, 1.3rem);
+        }
+        
+        .player-controls p {
+            font-size: clamp(0.8rem, 2vw, 1rem);
+            color: #ffffff;
+            margin-bottom: 3px;
+        }
+        
+        .score-display {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin: 10px 0;
+            font-size: clamp(1.5rem, 4vw, 2.5rem);
+            font-weight: bold;
+            text-shadow: 0 0 10px #ffffff;
+        }
+        
+        .player1-score {
+            color: #b22234;
+        }
+        
+        .player2-score {
+            color: #3c3b6e;
+        }
+        
+        .game-over {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background-color: rgba(10, 10, 58, 0.9);
+            z-index: 10;
+            display: none;
+        }
+        
+        .game-over h2 {
+            font-size: clamp(2rem, 5vw, 3.5rem);
+            margin-bottom: 20px;
+            color: #ffffff;
+            text-shadow: 0 0 15px #b22234;
+            text-align: center;
+            padding: 0 10px;
+        }
+        
+        .btn {
+            padding: 12px 30px;
+            font-size: clamp(1rem, 3vw, 1.4rem);
+            background: linear-gradient(to bottom, #b22234, #8b0000);
+            color: #ffffff;
+            border: 2px solid #ffffff;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: bold;
+            margin-top: 15px;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+        }
+        
+        .btn:hover {
+            background: linear-gradient(to bottom, #ffffff, #dddddd);
+            color: #b22234;
+            box-shadow: 0 0 15px #b22234;
+        }
+        
+        .instructions {
+            max-width: 100%;
+            margin: 15px auto 0;
+            padding: 15px;
+            background: linear-gradient(to bottom, #3c3b6e, #2a2a5a);
+            border-radius: 8px;
+            border: 2px solid #ffffff;
+            font-size: clamp(0.9rem, 2vw, 1.1rem);
+            line-height: 1.5;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+        }
+        
+        .instructions h3 {
+            color: #ffffff;
+            margin-bottom: 10px;
+            font-size: clamp(1.2rem, 3vw, 1.5rem);
+            text-shadow: 0 0 8px #b22234;
+        }
+        
+        .instructions p {
+            margin-bottom: 8px;
+        }
+        
+        .pulse {
+            animation: pulse 1.5s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        .stars {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+        
+        .star {
+            position: absolute;
+            background-color: white;
+            border-radius: 50%;
+        }
+        
+        .audio-control {
+            margin-top: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .audio-btn {
+            background: transparent;
+            border: 1px solid #ffffff;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        
+        @media (max-height: 700px) {
+            .game-board {
+                height: 50vh;
+            }
+            
+            .banner {
+                padding: 8px;
+            }
+            
+            .instructions {
+                margin-top: 10px;
+                padding: 10px;
+            }
+        }
+        
+        @media (max-width: 600px) {
+            body {
+                padding: 10px;
+            }
+            
+            .game-board {
+                height: 50vh;
+                max-height: 350px;
+            }
+            
+            .controls {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .player-controls {
+                width: 100%;
+                max-width: 250px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="stars" id="stars"></div>
+    
+    <div class="game-container">
+        <div class="banner">
+            <h1>VOTE FOR ROY TIMMONS<br>OKLAHOMA STATE REPRESENTATIVE!</h1>
+        </div>
+        
+        <div class="subtitle">CLASSIC PONG - PATRIOTIC EDITION</div>
+        
+        <div class="score-display">
+            <div class="player1-score">P1: <span id="player1-score">0</span></div>
+            <div class="player2-score">P2: <span id="player2-score">0</span></div>
+        </div>
+        
+        <div class="game-board">
+            <canvas id="gameCanvas"></canvas>
+            
+            <div class="game-over" id="gameOverScreen">
+                <h2 id="winnerText">PLAYER 1 WINS!</h2>
+                <button class="btn pulse" id="restartBtn">PLAY AGAIN</button>
+            </div>
+        </div>
+        
+        <div class="controls">
+            <div class="player-controls">
+                <h3>PLAYER 1</h3>
+                <p>W - Move Up</p>
+                <p>S - Move Down</p>
+            </div>
+            
+            <div class="player-controls">
+                <h3>PLAYER 2</h3>
+                <p>↑ - Move Up</p>
+                <p>↓ - Move Down</p>
+            </div>
+        </div>
+        
+        <div class="audio-control">
+            <button class="audio-btn" id="playBtn">Play Music</button>
+            <button class="audio-btn" id="pauseBtn">Pause Music</button>
+            <span id="audioStatus">Music ready</span>
+        </div>
+        
+        <div class="instructions">
+            <h3>HOW TO PLAY</h3>
+            <p>Use your paddle to hit the ball back to your opponent. Score points when your opponent fails to return the ball.</p>
+            <p>First player to reach 7 points wins the game!</p>
+        </div>
+    </div>
+
+    <!-- Audio Element with correct raw GitHub URL -->
+    <audio id="backgroundMusic" loop preload="auto">
+        <source src="https://raw.githubusercontent.com/TitanBusinessPros/TBP-Images/main/Vote-Song-Roy.mp3" type="audio/mpeg">
+        Your browser does not support the audio element.
+    </audio>
+
+    <script>
+        // Create star background
+        function createStars() {
+            const starsContainer = document.getElementById('stars');
+            for (let i = 0; i < 80; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                star.style.width = Math.random() * 2 + 1 + 'px';
+                star.style.height = star.style.width;
+                star.style.left = Math.random() * 100 + '%';
+                star.style.top = Math.random() * 100 + '%';
+                star.style.opacity = Math.random() * 0.7 + 0.3;
+                starsContainer.appendChild(star);
+            }
+        }
+        
+        // Game elements
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const player1ScoreElement = document.getElementById('player1-score');
+        const player2ScoreElement = document.getElementById('player2-score');
+        const gameOverScreen = document.getElementById('gameOverScreen');
+        const winnerText = document.getElementById('winnerText');
+        const restartBtn = document.getElementById('restartBtn');
+        
+        // Audio elements
+        const backgroundMusic = document.getElementById('backgroundMusic');
+        const playBtn = document.getElementById('playBtn');
+        const pauseBtn = document.getElementById('pauseBtn');
+        const audioStatus = document.getElementById('audioStatus');
+        
+        // Set canvas dimensions based on container
+        function setCanvasSize() {
+            const container = canvas.parentElement;
+            canvas.width = container.clientWidth;
+            canvas.height = container.clientHeight;
+        }
+        
+        // Game variables
+        let player1Score = 0;
+        let player2Score = 0;
+        const winningScore = 7;
+        let gameActive = true;
+        let audioStarted = false;
+        
+        // Paddle properties - increased speed
+        const paddleWidth = 15;
+        const paddleHeight = 100;
+        const paddleSpeed = 15; // Increased speed
+        
+        const player1 = {
+            x: 0,
+            y: 0,
+            width: paddleWidth,
+            height: paddleHeight,
+            color: '#b22234', // Red
+            score: 0
+        };
+        
+        const player2 = {
+            x: 0,
+            y: 0,
+            width: paddleWidth,
+            height: paddleHeight,
+            color: '#3c3b6e', // Blue
+            score: 0
+        };
+        
+        // Ball properties - increased speed
+        const ball = {
+            x: 0,
+            y: 0,
+            radius: 12,
+            speed: 12, // Increased speed
+            velocityX: 0,
+            velocityY: 0,
+            color: '#ffffff' // White
+        };
+        
+        // Control states
+        const keys = {
+            w: false,
+            s: false,
+            ArrowUp: false,
+            ArrowDown: false
+        };
+        
+        // Initialize game objects with responsive sizes
+        function initializeGameObjects() {
+            // Set player positions
+            player1.x = canvas.width * 0.05;
+            player1.y = canvas.height / 2 - player1.height / 2;
+            
+            player2.x = canvas.width * 0.95 - player2.width;
+            player2.y = canvas.height / 2 - player2.height / 2;
+            
+            // Reset ball position
+            resetBall();
+        }
+        
+        // Audio functions
+        function startAudio() {
+            if (!audioStarted) {
+                backgroundMusic.play().then(() => {
+                    audioStatus.textContent = "Music playing";
+                    audioStarted = true;
+                }).catch(e => {
+                    console.log("Audio play failed:", e);
+                    audioStatus.textContent = "Click Play Music button to start audio";
+                });
+            }
+        }
+        
+        // Event listeners for keyboard controls
+        window.addEventListener('keydown', (e) => {
+            if (e.key in keys) {
+                keys[e.key] = true;
+                startAudio(); // Start audio on first key press
+            }
+        });
+        
+        window.addEventListener('keyup', (e) => {
+            if (e.key in keys) {
+                keys[e.key] = false;
+            }
+        });
+        
+        // Restart game button
+        restartBtn.addEventListener('click', resetGame);
+        
+        // Audio control buttons
+        playBtn.addEventListener('click', () => {
+            backgroundMusic.play().then(() => {
+                audioStatus.textContent = "Music playing";
+            }).catch(e => {
+                console.log("Manual play failed:", e);
+                audioStatus.textContent = "Audio play failed - try clicking the game area first";
+            });
+        });
+        
+        pauseBtn.addEventListener('click', () => {
+            backgroundMusic.pause();
+            audioStatus.textContent = "Music paused";
+        });
+        
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            setCanvasSize();
+            initializeGameObjects();
+        });
+        
+        // Draw functions
+        function drawRect(x, y, width, height, color) {
+            ctx.fillStyle = color;
+            ctx.fillRect(x, y, width, height);
+            
+            // Add a glow effect
+            ctx.shadowColor = color;
+            ctx.shadowBlur = 15;
+            ctx.fillRect(x, y, width, height);
+            ctx.shadowBlur = 0;
+        }
+        
+        function drawCircle(x, y, radius, color) {
+            ctx.fillStyle = color;
+            ctx.beginPath();
+            ctx.arc(x, y, radius, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Add a glow effect
+            ctx.shadowColor = color;
+            ctx.shadowBlur = 15;
+            ctx.fill();
+            ctx.shadowBlur = 0;
+        }
+        
+        function drawNet() {
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([10, 15]);
+            ctx.beginPath();
+            ctx.moveTo(canvas.width / 2, 0);
+            ctx.lineTo(canvas.width / 2, canvas.height);
+            ctx.stroke();
+            ctx.setLineDash([]);
+        }
+        
+        // Game logic functions
+        function movePaddles() {
+            // Player 1 movement (W/S keys)
+            if (keys.w && player1.y > 0) {
+                player1.y -= paddleSpeed;
+            }
+            if (keys.s && player1.y < canvas.height - player1.height) {
+                player1.y += paddleSpeed;
+            }
+            
+            // Player 2 movement (Arrow keys)
+            if (keys.ArrowUp && player2.y > 0) {
+                player2.y -= paddleSpeed;
+            }
+            if (keys.ArrowDown && player2.y < canvas.height - player2.height) {
+                player2.y += paddleSpeed;
+            }
+        }
+        
+        function moveBall() {
+            // Move the ball
+            ball.x += ball.velocityX;
+            ball.y += ball.velocityY;
+            
+            // Ball collision with top and bottom walls
+            if (ball.y + ball.radius > canvas.height || ball.y - ball.radius < 0) {
+                ball.velocityY = -ball.velocityY;
+            }
+            
+            // Ball collision with paddles
+            let player = (ball.x < canvas.width / 2) ? player1 : player2;
+            
+            if (
+                ball.x - ball.radius < player.x + player.width &&
+                ball.x + ball.radius > player.x &&
+                ball.y - ball.radius < player.y + player.height &&
+                ball.y + ball.radius > player.y
+            ) {
+                // Calculate angle of bounce based on where the ball hits the paddle
+                let collidePoint = (ball.y - (player.y + player.height / 2)) / (player.height / 2);
+                let angleRad = collidePoint * (Math.PI / 4); // Maximum 45 degree angle
+                
+                // Determine direction of ball (left or right)
+                let direction = (ball.x < canvas.width / 2) ? 1 : -1;
+                
+                // Change velocity X and Y
+                ball.velocityX = direction * ball.speed * Math.cos(angleRad);
+                ball.velocityY = ball.speed * Math.sin(angleRad);
+                
+                // Increase speed slightly with each hit
+                ball.speed += 0.5;
+            }
+            
+            // Score points
+            if (ball.x - ball.radius < 0) {
+                // Player 2 scores
+                player2Score++;
+                player2ScoreElement.textContent = player2Score;
+                resetBall();
+                checkGameOver();
+            } else if (ball.x + ball.radius > canvas.width) {
+                // Player 1 scores
+                player1Score++;
+                player1ScoreElement.textContent = player1Score;
+                resetBall();
+                checkGameOver();
+            }
+        }
+        
+        function resetBall() {
+            ball.x = canvas.width / 2;
+            ball.y = canvas.height / 2;
+            ball.speed = 12;
+            // Set initial velocity with random direction
+            ball.velocityX = (Math.random() > 0.5 ? 1 : -1) * ball.speed;
+            ball.velocityY = (Math.random() * 2 - 1) * (ball.speed / 2);
+        }
+        
+        function checkGameOver() {
+            if (player1Score >= winningScore || player2Score >= winningScore) {
+                gameActive = false;
+                if (player1Score >= winningScore) {
+                    winnerText.textContent = "PLAYER 1 WINS!";
+                    winnerText.style.textShadow = "0 0 15px #b22234";
+                } else {
+                    winnerText.textContent = "PLAYER 2 WINS!";
+                    winnerText.style.textShadow = "0 0 15px #3c3b6e";
+                }
+                gameOverScreen.style.display = 'flex';
+            }
+        }
+        
+        function resetGame() {
+            player1Score = 0;
+            player2Score = 0;
+            player1ScoreElement.textContent = '0';
+            player2ScoreElement.textContent = '0';
+            gameActive = true;
+            gameOverScreen.style.display = 'none';
+            resetBall();
+            
+            // Reset paddle positions
+            player1.y = canvas.height / 2 - player1.height / 2;
+            player2.y = canvas.height / 2 - player2.height / 2;
+            
+            // Start audio if not already playing
+            startAudio();
+        }
+        
+        // Game loop
+        function gameLoop() {
+            // Clear canvas
+            ctx.fillStyle = '#0a0a3a';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw game elements
+            drawNet();
+            drawRect(player1.x, player1.y, player1.width, player1.height, player1.color);
+            drawRect(player2.x, player2.y, player2.width, player2.height, player2.color);
+            drawCircle(ball.x, ball.y, ball.radius, ball.color);
+            
+            if (gameActive) {
+                // Update game state
+                movePaddles();
+                moveBall();
+            }
+            
+            // Continue game loop
+            requestAnimationFrame(gameLoop);
+        }
+        
+        // Initialize the game
+        setCanvasSize();
+        initializeGameObjects();
+        createStars();
+        gameLoop();
+        
+        // Add click event to start audio if needed
+        document.body.addEventListener('click', startAudio);
+    </script>
+</body>
+</html>
